@@ -13,12 +13,10 @@ class Duration
 end
 
 def lambda_handler(event:, context:)
-  date = event['date'].to_s
+  date = event['date'].to_s.insert(4, '-').insert(7, '-') # GORAで必要な形に直してる
   budget = event['budget']
   departure = event['departure']
   duration = event['duration']
-
-  date = date.insert(4, '-').insert(7, '-') # GORAで必要な形に直してる
 
   RakutenWebService.configure do |c|
     c.application_id = ENV['RAKUTEN_APPID']
@@ -31,7 +29,7 @@ def lambda_handler(event:, context:)
 
     plans.each do |plan|
       next if plan['golfCourseName'] =~ /.*(レッスン|ショート|7ホール|ナイター).*/ # 不要そうな文字が入ってたらスキップ
-      plan_duration = Duration.find(golf_course_id: plan['golfCourseId']).send("duration#{departure}")
+      plan_duration = Duration.find(golf_course_id: plan['golfCourseId']).send("duration#{departure}") # DynamoDBに保持している所要時間を取得
       next if plan_duration > duration # 希望の所要時間より長いものの場合はスキップ
       matched_plans.push(
         {
