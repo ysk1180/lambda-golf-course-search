@@ -33,12 +33,13 @@ def lambda_handler(event:, context:)
       next if plan_duration > duration # 希望の所要時間より長いものの場合はスキップ
       matched_plans.push(
         {
-          name: plan['golfCourseName'],
+          plan_name: plan['planInfo'][0]['planName'],
+          course_id: plan['golfCourseId'],
+          course_name: plan['golfCourseName'],
           caption: plan['golfCourseCaption'],
           prefecture: plan['prefecture'],
           image_url: plan['golfCourseImageUrl'],
           evaluation: plan['evaluation'],
-          plan_name: plan['planInfo'][0]['planName'],
           price: plan['planInfo'][0]['price'],
           duration: plan_duration,
           reserve_url_pc: plan['planInfo'][0]['callInfo']['reservePageUrlPC'],
