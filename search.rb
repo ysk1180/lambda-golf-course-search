@@ -27,25 +27,32 @@ def lambda_handler(event:, context:)
   1.upto(2) do |page| # API Gatewayが30秒でタイムアウトするからそれのギリギリの2ページまでにしてる(1ページ30件)
     plans = RakutenWebService::Gora::Plan.search(page: page, maxPrice: budget, playDate: date, areaCode: '8,11,12,13,14', NGPlan: 'planHalfRound,planLesson,planOpenCompe,planRegularCompe')
 
-    plans.each do |plan|
-      next if plan['golfCourseName'] =~ /.*(レッスン|ショート|7ホール|ナイター).*/ # 不要そうな文字が入ってたらスキップ
-      plan_duration = Duration.find(golf_course_id: plan['golfCourseId']).send("duration#{departure}") # DynamoDBに保持している所要時間を取得
-      next if plan_duration > duration # 希望の所要時間より長いものの場合はスキップ
-      matched_plans.push(
-        {
-          plan_name: plan['planInfo'][0]['planName'],
-          course_id: plan['golfCourseId'],
-          course_name: plan['golfCourseName'],
-          caption: plan['golfCourseCaption'],
-          prefecture: plan['prefecture'],
-          image_url: plan['golfCourseImageUrl'],
-          evaluation: plan['evaluation'],
-          price: plan['planInfo'][0]['price'],
-          duration: plan_duration,
-          reserve_url_pc: plan['planInfo'][0]['callInfo']['reservePageUrlPC'],
-          reserve_url_mobile: plan['planInfo'][0]['callInfo']['reservePageUrlMobile'],
-        }
-      )
+    begin
+      plans.each do |plan|
+        next if plan['golfCourseName'] =~ /.*(レッスン|ショート|7ホール|ナイター).*/ # 不要そうな文字が入ってたらスキップ
+        plan_duration = Duration.find(golf_course_id: plan['golfCourseId']).send("duration#{departure}") # DynamoDBに保持している所要時間を取得
+        next if plan_duration > duration # 希望の所要時間より長いものの場合はスキップ
+        matched_plans.push(
+          {
+            plan_name: plan['planInfo'][0]['planName'],
+            course_id: plan['golfCourseId'],
+            course_name: plan['golfCourseName'],
+            caption: plan['golfCourseCaption'],
+            prefecture: plan['prefecture'],
+            image_url: plan['golfCourseImageUrl'],
+            evaluation: plan['evaluation'],
+            price: plan['planInfo'][0]['price'],
+            duration: plan_duration,
+            reserve_url_pc: plan['planInfo'][0]['callInfo']['reservePageUrlPC'],
+            reserve_url_mobile: plan['planInfo'][0]['callInfo']['reservePageUrlMobile'],
+          }
+        )
+      end
+    rescue
+      return {
+        count: 0,
+        plans: []
+      }
     end
 
     break unless plans.has_next_page?
