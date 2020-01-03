@@ -30,6 +30,7 @@ def lambda_handler(event:, context:)
     begin
       plans.each do |plan|
         next if plan['golfCourseName'] =~ /.*(レッスン|ショート|7ホール|ナイター).*/ # 不要そうな文字が入ってたらスキップ
+        next if plan['planInfo'][0]['planName'] =~ /.*(レッスン|ショート|7ホール|ナイター|7H).*/
         plan_duration = Duration.find(golf_course_id: plan['golfCourseId']).send("duration#{departure}") # DynamoDBに保持している所要時間を取得
         next if plan_duration > duration # 希望の所要時間より長いものの場合はスキップ
         matched_plans.push(
