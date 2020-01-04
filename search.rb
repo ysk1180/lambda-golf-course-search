@@ -36,7 +36,7 @@ def lambda_handler(event:, context:)
         matched_plans.push(
           {
             plan_name: plan['planInfo'][0]['planName'],
-            course_id: plan['golfCourseId'],
+            plan_id: plan['planInfo'][0]['planId'],
             course_name: plan['golfCourseName'],
             caption: plan['golfCourseCaption'],
             prefecture: plan['prefecture'],
