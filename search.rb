@@ -10,6 +10,7 @@ class Duration
   integer_attr :duration4
   integer_attr :duration5
   integer_attr :duration6
+  integer_attr :duration7
   integer_attr :prefecture
 end
 
