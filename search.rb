@@ -47,6 +47,7 @@ def lambda_handler(event:, context:)
             price: plan['planInfo'][0]['price'],
             duration: plan_duration,
             reserve_url_pc: plan['planInfo'][0]['callInfo']['reservePageUrlPC'],
+            stock_count: plan['planInfo'][0]['callInfo']['stockCount'],
           }
         )
       end
