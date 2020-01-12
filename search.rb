@@ -16,11 +16,24 @@ class Duration
   integer_attr :prefecture
 end
 
+def format_start_time(time)
+  time_arr = time.split('')
+  time_arr.push('4', '5') if time_arr.include?('6')
+  if time_arr.include?('1')
+    time_arr.delete('1')
+    time_arr.push('10', '11', '12', '13', '14', '15')
+  end
+  time_arr.join(',')
+end
+
 def lambda_handler(event:, context:)
   date = event['date'].to_s.insert(4, '-').insert(7, '-') # GORAで必要な形に直してる
   budget = event['budget']
   departure = event['departure']
   duration = event['duration']
+  start_time = event['startTime']&.to_s || '0'
+
+  start_time = format_start_time(start_time) if start_time != '0'
 
   RakutenWebService.configure do |c|
     c.application_id = ENV['RAKUTEN_APPID']
@@ -29,7 +42,7 @@ def lambda_handler(event:, context:)
 
   matched_plans = []
   1.upto(2) do |page| # API Gatewayが30秒でタイムアウトするからそれのギリギリの2ページまでにしてる(1ページ30件)
-    plans = RakutenWebService::Gora::Plan.search(page: page, maxPrice: budget, playDate: date, areaCode: '8,11,12,13,14', NGPlan: 'planHalfRound,planLesson,planOpenCompe,planRegularCompe')
+    plans = RakutenWebService::Gora::Plan.search(page: page, maxPrice: budget, playDate: date, areaCode: '8,11,12,13,14', startTimeZone: start_time, NGPlan: 'planHalfRound,planLesson,planOpenCompe,planRegularCompe')
 
     begin
       plans.each do |plan|
