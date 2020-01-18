@@ -32,8 +32,14 @@ def lambda_handler(event:, context:)
   departure = event['departure']
   duration = event['duration']
   start_time = event['startTime']&.to_s || '0'
+  practice_field = event['practiceField']
+  cart = event['cart']
+  lunch = event['lunch']
 
   start_time = format_start_time(start_time) if start_time != '0'
+  practice_field = practice_field ? '1' : '0'
+  cart = cart ? '1' : '0'
+  lunch = lunch ? '1' : '0'
 
   RakutenWebService.configure do |c|
     c.application_id = ENV['RAKUTEN_APPID']
@@ -42,7 +48,7 @@ def lambda_handler(event:, context:)
 
   matched_plans = []
   1.upto(2) do |page| # API Gatewayが30秒でタイムアウトするからそれのギリギリの2ページまでにしてる(1ページ30件)
-    plans = RakutenWebService::Gora::Plan.search(page: page, maxPrice: budget, playDate: date, areaCode: '8,11,12,13,14', startTimeZone: start_time, NGPlan: 'planHalfRound,planLesson,planOpenCompe,planRegularCompe')
+    plans = RakutenWebService::Gora::Plan.search(page: page, maxPrice: budget, playDate: date, areaCode: '8,11,12,13,14', startTimeZone: start_time, practiceFacility: practice_field, planCart: cart, planLunch: lunch ,NGPlan: 'planHalfRound,planLesson,planOpenCompe,planRegularCompe')
 
     begin
       plans.each do |plan|
