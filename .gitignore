@@ -1,0 +1,6 @@
+# Bundler が gem をインストールする先（zip作成時に再生成）
+vendor/
+.bundle/
+
+# Lambda デプロイ用 zip（毎回ローカルで再生成）
+*.zip
